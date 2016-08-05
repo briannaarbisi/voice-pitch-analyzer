@@ -84,14 +84,11 @@ public class RecordingListActivity extends AppCompatActivity implements Recordin
             case R.id.action_progress:
             {
                 startActivity(new Intent(this, ProgressActivity.class));
-//                this.getSupportFragmentManager().beginTransaction()
-//                        .add(R.id.container, new ProgressFragment())
-//                        .commit();
                 return true;
             }
 
-            case R.id.action_about: {
-                startActivity(new Intent(this, AboutActivity.class));
+            case R.id.action_settings: {
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             }
         }

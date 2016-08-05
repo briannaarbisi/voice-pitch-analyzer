@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -118,13 +119,10 @@ public class RecordViewActivity extends ActionBarActivity implements ActionBar.T
             case R.id.action_progress:
             {
                 startActivity(new Intent(this, ProgressActivity.class));
-//                this.getSupportFragmentManager().beginTransaction()
-//                        .add(R.id.container, new ProgressFragment())
-//                        .commit();
                 return true;
             }
 
-            case R.id.action_about: {
+            case R.id.action_settings: {
                 startActivity(new Intent(this, AboutActivity.class));
                 return true;
             }
