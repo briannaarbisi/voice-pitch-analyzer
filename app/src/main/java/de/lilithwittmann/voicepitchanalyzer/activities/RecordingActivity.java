@@ -5,13 +5,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v7.app.ActionBarActivity;
 
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.TabHost;
 import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
@@ -19,14 +18,13 @@ import com.crashlytics.android.Crashlytics;
 import com.github.mikephil.charting.data.Entry;
 import de.lilithwittmann.voicepitchanalyzer.R;
 import de.lilithwittmann.voicepitchanalyzer.fragments.ReadingFragment;
+import de.lilithwittmann.voicepitchanalyzer.fragments.ReadingWebPageFragment;
 import de.lilithwittmann.voicepitchanalyzer.fragments.RecordGraphFragment;
 import de.lilithwittmann.voicepitchanalyzer.fragments.RecordingFragment;
 import de.lilithwittmann.voicepitchanalyzer.models.Recording;
 import de.lilithwittmann.voicepitchanalyzer.utils.PitchCalculator;
 import io.fabric.sdk.android.Fabric;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,6 +38,7 @@ public class RecordingActivity extends ActionBarActivity implements RecordingFra
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        getWindow().requestFeature(Window.FEATURE_PROGRESS);
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_recording);
@@ -47,7 +46,11 @@ public class RecordingActivity extends ActionBarActivity implements RecordingFra
         tabHost = (FragmentTabHost)findViewById(R.id.tabhost);
         tabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
 
-        addTab(ReadingFragment.class, getString(R.string.title_reading));
+        if (isUseWebPage())
+            addTab(ReadingWebPageFragment.class, getString(R.string.title_reading));
+        else
+            addTab(ReadingFragment.class, getString(R.string.title_reading));
+
         addTab(RecordGraphFragment.class, getString(R.string.title_section2));
 
         SharedPreferences sharedPref =
@@ -55,6 +58,12 @@ public class RecordingActivity extends ActionBarActivity implements RecordingFra
 
         Integer tabIndex = sharedPref.getInt(getString(R.string.recording_tab_index), 0);
         tabHost.setCurrentTab(tabIndex);
+    }
+
+    private boolean isUseWebPage() {
+        SharedPreferences sharedPref =
+                getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(getString(R.string.settings_use_web_page), false);
     }
 
     private void addTab(final Class view, String tag) {

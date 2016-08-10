@@ -1,12 +1,16 @@
 package de.lilithwittmann.voicepitchanalyzer.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Switch;
 import de.lilithwittmann.voicepitchanalyzer.R;
 
 public class SettingsActivity extends AppCompatActivity
@@ -46,5 +50,29 @@ public class SettingsActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private void saveSettings() {
+        SharedPreferences prefs =
+                getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+        Switch webToggle = (Switch) findViewById(R.id.webPageSwitch);
+        prefs.edit().putBoolean(getString(R.string.settings_use_web_page), webToggle.isChecked()).apply();
+
+        EditText webText = (EditText) findViewById(R.id.editWebPageText);
+        prefs.edit().putString(getString(R.string.settings_web_url), webText.getText().toString()).apply();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveSettings();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        saveSettings();
     }
 }
