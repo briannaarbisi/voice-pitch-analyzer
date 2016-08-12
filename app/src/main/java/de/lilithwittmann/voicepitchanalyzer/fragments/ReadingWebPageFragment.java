@@ -9,15 +9,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.*;
-import android.widget.Toast;
 import de.lilithwittmann.voicepitchanalyzer.R;
+import de.lilithwittmann.voicepitchanalyzer.utils.CacheableWebViewClient;
 
 /**
  * Reading material for display while doing a recording. Loads a user input url from settings.
  */
 public class ReadingWebPageFragment extends Fragment {
-    public ReadingWebPageFragment()
-    {
+    public ReadingWebPageFragment() {
         // Required empty public constructor
     }
 
@@ -30,22 +29,17 @@ public class ReadingWebPageFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        SharedPreferences prefs = getPreferences(getContext());
-        String webPage = prefs.getString(getString(R.string.settings_web_url), "google.com");
-
         WebView webView = (WebView) view.findViewById(R.id.webView);
         initWebView(webView);
+        webView.loadUrl(getUrlFromSettings());
+    }
 
-        if (!webPage.startsWith("http://"))
-            webPage = "http://www." + webPage;
-
-        webView.loadUrl(webPage);
+    private SharedPreferences getPreferences(Context context) {
+        return context.getSharedPreferences(
+                context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
     }
 
     private void initWebView(WebView webView) {
-        // todo caching
-//        webView.getSettings().setJavaScriptEnabled(true);
-
         final Activity activity = getActivity();
         webView.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView view, int progress) {
@@ -53,16 +47,21 @@ public class ReadingWebPageFragment extends Fragment {
             }
         });
 
-        webView.setWebViewClient(new WebViewClient() {
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                Toast.makeText(activity, "Error loading user input web page, "
-                        + description, Toast.LENGTH_SHORT).show();
-            }
-        });
+        CacheableWebViewClient client = new CacheableWebViewClient(getActivity());
+        client.addCacheableUrl(getUrlFromSettings());
+
+        webView.setWebViewClient(client);
     }
 
-    private SharedPreferences getPreferences(Context context) {
-        return context.getSharedPreferences(
-                    context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+    private String getUrlFromSettings() {
+        SharedPreferences prefs = getPreferences(getContext());
+        String webPage = prefs.getString(getString(R.string.settings_web_url), "google.com");
+
+        // possible for http://mysite.com can to have dns record and none for http://www.mysite.com
+        // so if just http:// we assume that's what they meant but if http:// missing we assume they want the www.
+        if (!webPage.startsWith("http://"))
+            webPage = "http://www." + webPage.replace("wwww.","");
+
+        return webPage;
     }
 }
