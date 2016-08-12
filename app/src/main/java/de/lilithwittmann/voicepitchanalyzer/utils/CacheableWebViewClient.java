@@ -23,9 +23,12 @@ import java.util.*;
 
 // started/cleaned up from tutorials.jenkov.com/android/android-web-apps-using-android-webview.html
 public class CacheableWebViewClient extends WebViewClient {
+    private static String LOG_TAG = "reader web view cacher";
+
     private Activity activity = null;
     private UrlCache urlCache = null;
-    private static String LOG_TAG = "reader web view cacher";
+    private int yScroll;
+    private int xScroll;
 
     public CacheableWebViewClient(Activity activity) {
         this.activity = activity;
@@ -36,6 +39,11 @@ public class CacheableWebViewClient extends WebViewClient {
         this.urlCache.registerHtml(url, UrlCache.ONE_HOUR);
     }
 
+    public void setScrollPosition(int x, int y) {
+        xScroll = x;
+        yScroll = y;
+    }
+
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         if (urlCache.getCacheEntry(url) == null)
             return false;
@@ -44,6 +52,11 @@ public class CacheableWebViewClient extends WebViewClient {
         activity.startActivity(intent);
 
         return true;
+    }
+
+    public void onPageFinished(WebView view, String url) {
+        super.onPageFinished(view, url);
+        view.scrollTo(xScroll, yScroll);
     }
 
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
@@ -61,10 +74,10 @@ public class CacheableWebViewClient extends WebViewClient {
         public static final long ONE_MINUTE = 60L * ONE_SECOND;
         public static final long ONE_HOUR = 60L * ONE_MINUTE;
         public static final long ONE_DAY = 24 * ONE_HOUR;
-        public static final String ENTRIES_FILE_NAME = "web-cache-entries.json";
 
-        private static boolean isFirstRun = true;
         private static final String CACHE_CHILD_DIR = "web-view-cache";
+        public static final String ENTRIES_FILE_NAME = "web-cache-entries.json";
+        private static boolean isFirstRun = true;
 
         private Map<String, CacheEntry> cacheEntries = new HashMap<>();
         protected Activity activity = null;
@@ -80,8 +93,12 @@ public class CacheableWebViewClient extends WebViewClient {
         }
 
         public void registerHtml(String url, long maxAgeMillis) {
-            if (getCacheEntry(url) != null)
+            if (getCacheEntry(url) != null) {
+                getCacheEntry(url).url = url;
+                getCacheEntry(url).maxAgeMillis = maxAgeMillis;
+                saveCacheEntries();
                 return;
+            }
 
             String cacheFileName = UUID.randomUUID().toString() + ".html";
             CacheEntry entry = new CacheEntry(url, cacheFileName, maxAgeMillis);
@@ -96,7 +113,8 @@ public class CacheableWebViewClient extends WebViewClient {
 
             File cachedFile = entry.getCachedFile();
             if (cachedFile.exists()) {
-                if (entry.isExpired()) {
+                // don't dcacelete cache file if web connection bad so still useable offline
+                if (entry.isExpired() && isOnline()) {
                     cachedFile.delete();
                     Log.d(LOG_TAG, "Deleting from cache: " + url);
 
@@ -127,7 +145,7 @@ public class CacheableWebViewClient extends WebViewClient {
                 downloadAndStore(entry);
                 return loadFromCache(entry);
             } catch (Exception e) {
-                Log.d(LOG_TAG, "Error reading file over network: " + entry.getCachedFile().getPath(), e);
+                Log.d(LOG_TAG, "Error reading file over network: " + entry.url, e);
             }
 
             return null;
@@ -180,7 +198,8 @@ public class CacheableWebViewClient extends WebViewClient {
             }
 
             Gson gson = new GsonBuilder().create();
-            Type typeOfHashMap = new TypeToken<Map<String, CacheEntry>>() {}.getType();
+            Type typeOfHashMap = new TypeToken<Map<String, CacheEntry>>() {
+            }.getType();
             cacheEntries = gson.fromJson(json, typeOfHashMap);
 
             // must set rootdir since inner class accescing the parent rootDir field
@@ -195,7 +214,7 @@ public class CacheableWebViewClient extends WebViewClient {
             for (Map.Entry<String, CacheEntry> entryOn : cacheEntries.entrySet()) {
                 File file = entryOn.getValue().getCachedFile();
 
-                if (file.exists() && entryOn.getValue().isExpired()) {
+                if (file.exists() && entryOn.getValue().isExpired() && isOnline()) {
                     file.delete();
                     urlsToRemove.add(entryOn.getKey());
                 }
@@ -224,6 +243,15 @@ public class CacheableWebViewClient extends WebViewClient {
             return url.toLowerCase();
         }
 
+        private boolean isOnline() {
+            try {
+                ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+                return cm.getActiveNetworkInfo().isConnectedOrConnecting();
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
         protected class CacheEntry {
             public String url;
             public String fileName;
@@ -244,17 +272,7 @@ public class CacheableWebViewClient extends WebViewClient {
 
             private boolean isExpired() {
                 long cacheEntryAge = System.currentTimeMillis() - getCachedFile().lastModified();
-                // don't set expired and delete cache file if web connection bad so still useable offline
-                return cacheEntryAge > maxAgeMillis && isOnline();
-            }
-
-            private boolean isOnline() {
-                try {
-                    ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-                    return cm.getActiveNetworkInfo().isConnectedOrConnecting();
-                } catch (Exception e) {
-                    return false;
-                }
+                return cacheEntryAge > maxAgeMillis;
             }
         }
     }

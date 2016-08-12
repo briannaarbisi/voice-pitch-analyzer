@@ -61,7 +61,14 @@ public class SettingsActivity extends AppCompatActivity
         prefs.edit().putBoolean(getString(R.string.settings_use_web_page), webToggle.isChecked()).apply();
 
         EditText webText = (EditText) findViewById(R.id.editWebPageText);
-        prefs.edit().putString(getString(R.string.settings_web_url), webText.getText().toString()).apply();
+        String url = webText.getText().toString();
+        String lastSavedUrl = prefs.getString(getString(R.string.settings_web_url), getString(R.string.default_web_url));
+
+        // clear stored web view scroll position if url is changed
+        if (!lastSavedUrl.equalsIgnoreCase(url))
+            prefs.edit().putString(getString(R.string.web_scroll_position), "0,0").apply();
+
+        prefs.edit().putString(getString(R.string.settings_web_url), url).apply();
     }
 
     @Override

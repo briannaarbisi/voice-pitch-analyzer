@@ -18,7 +18,7 @@ import com.crashlytics.android.Crashlytics;
 import com.github.mikephil.charting.data.Entry;
 import de.lilithwittmann.voicepitchanalyzer.R;
 import de.lilithwittmann.voicepitchanalyzer.fragments.ReadingFragment;
-import de.lilithwittmann.voicepitchanalyzer.fragments.ReadingWebPageFragment;
+import de.lilithwittmann.voicepitchanalyzer.fragments.WebReadingFragment;
 import de.lilithwittmann.voicepitchanalyzer.fragments.RecordGraphFragment;
 import de.lilithwittmann.voicepitchanalyzer.fragments.RecordingFragment;
 import de.lilithwittmann.voicepitchanalyzer.models.Recording;
@@ -47,7 +47,7 @@ public class RecordingActivity extends ActionBarActivity implements RecordingFra
         tabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
 
         if (isUseWebPage())
-            addTab(ReadingWebPageFragment.class, getString(R.string.title_reading));
+            addTab(WebReadingFragment.class, getString(R.string.title_reading));
         else
             addTab(ReadingFragment.class, getString(R.string.title_reading));
 
