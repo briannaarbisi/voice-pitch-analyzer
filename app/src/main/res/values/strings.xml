@@ -89,7 +89,7 @@
 
     <!--settings-->
     <string name="label_use_web_page">Use web page for recording text</string>
-    <string name="settings_use_web_page">false</string>
-    <string name="settings_web_url">cs.columbia.edu/~hgs/audio/harvard.html</string>
+    <string name="settings_use_web_page" translatable="false">false</string>
+    <string name="settings_web_url" translatable="false">cs.columbia.edu/~hgs/audio/harvard.html</string>
 
 </resources>
