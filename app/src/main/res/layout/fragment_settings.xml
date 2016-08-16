@@ -32,6 +32,7 @@
             <EditText
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:inputType="textWebEmailAddress"
                     android:id="@+id/editWebPageText" android:enabled="true" android:layout_span="2"/>
         </TableRow>
     </TableLayout>

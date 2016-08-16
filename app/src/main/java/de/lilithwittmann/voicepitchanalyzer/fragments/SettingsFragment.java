@@ -63,7 +63,7 @@ public class SettingsFragment extends Fragment {
         Switch webPageSwitch = (Switch) getView().findViewById(R.id.webPageSwitch);
         webPageSwitch.setChecked(isUseWebPageText);
 
-        String wePageSite = sharedPref.getString(getString(R.string.settings_web_url), "google.com");
+        String wePageSite = sharedPref.getString(getString(R.string.settings_web_url), getString(R.string.default_web_url));
         EditText webPageEditText = (EditText) getView().findViewById(R.id.editWebPageText);
         webPageEditText.setText(wePageSite);
         webPageEditText.setEnabled(isUseWebPageText);

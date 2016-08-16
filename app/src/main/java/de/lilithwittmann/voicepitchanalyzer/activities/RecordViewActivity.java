@@ -123,7 +123,7 @@ public class RecordViewActivity extends ActionBarActivity implements ActionBar.T
             }
 
             case R.id.action_settings: {
-                startActivity(new Intent(this, AboutActivity.class));
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             }
         }
