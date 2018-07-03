@@ -1,1 +1,2 @@
-include ':app', ':TarsosDSP-Android-2.2'
+include ':app'
+//include ':app', ':TarsosDSP-Android-2.2'
